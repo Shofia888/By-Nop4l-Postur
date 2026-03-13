@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Posture Correction Program – 8 Week Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* =============================
+       CSS VARIABLES & RESET
+    ============================= */
+    :root {
+      --bg:          #F3F0EA;
+      --bg-card:     #FFFFFF;
+      --bg-muted:    #EAE6DF;
+      --border:      #DED9D0;
+      --sage:        #6B9B6E;
+      --sage-light:  #A4C4A6;
+      --sage-dark:   #4A7A4D;
+      --amber:       #C4895A;
+      --amber-light: #E8C4A0;
+      --red-soft:    #C26060;
+      --text:        #2A2A2A;
+      --text-mid:    #666666;
+      --text-light:  #999999;
+      --shadow:      0 2px 12px rgba(0,0,0,0.07);
+      --shadow-sm:   0 1px 4px rgba(0,0,0,0.05);
+      --radius:      14px;
+      --radius-sm:   8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    /* =============================
+       HEADER
+    ============================= */
+    .app-header {
+      background: linear-gradient(150deg, #4A7A4D 0%, #6B9B6E 60%, #8AB58D 100%);
+      padding: 22px 18px 18px;
+      color: #fff;
+    }
+    .app-title {
+      font-family: 'Lora', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 2px;
+    }
+    .app-tagline {
+      font-size: 0.74rem;
+      opacity: 0.75;
+      font-weight: 400;
+    }
+
+    /* =============================
+       WEEK TABS (horizontal scroll)
+    ============================= */
+    .week-tabs-wrap {
+      background: #3E6940;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .week-tabs-wrap::-webkit-scrollbar { display: none; }
+    .week-tabs {
+      display: flex;
+      padding: 0 12px 12px;
+      gap: 6px;
+      width: max-content;
+    }
+    .week-tab {
+      background: rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.65);
+      border: none;
+      border-radius: 30px;
+      padding: 5px 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.18s ease;
+    }
+    .week-tab.active {
+      background: #fff;
+      color: #3E6940;
+    }
+
+    /* =============================
+       DAY TABS
+    ============================= */
+    .day-tabs-wrap {
+      background: var(--bg-muted);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .day-tabs-wrap::-webkit-scrollbar { display: none; }
+    .day-tabs {
+      display: flex;
+      padding: 10px 12px;
+      gap: 7px;
+    }
+    .day-tab {
+      background: var(--bg-card);
+      color: var(--text-mid);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 5px 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.73rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      min-width: 48px;
+      text-align: center;
+    }
+    .day-tab.active {
+      background: var(--sage);
+      color: #fff;
+      border-color: var(--sage);
+    }
+    .day-tab.done-flag {
+      border-color: var(--sage-light);
+    }
+    .day-tab.done-flag::after {
+      content: ' ✓';
+      color: var(--sage);
+      font-size: 0.65rem;
+    }
+    .day-tab.active.done-flag::after {
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* =============================
+       MAIN CONTENT
+    ============================= */
+    .main {
+      padding: 14px 14px 110px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* =============================
+       WEEK INFO BAR
+    ============================= */
+    .week-info {
+      background: linear-gradient(120deg, var(--amber) 0%, #D4A070 100%);
+      border-radius: var(--radius);
+      padding: 13px 16px;
+      margin-bottom: 13px;
+      color: #fff;
+    }
+    .week-info h2 {
+      font-family: 'Lora', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .week-info p {
+      font-size: 0.73rem;
+      opacity: 0.85;
+    }
+
+    /* =============================
+       STAT CARDS ROW
+    ============================= */
+    .stats-row {
+      display: flex;
+      gap: 9px;
+      margin-bottom: 13px;
+    }
+    .stat-card {
+      flex: 1;
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+      padding: 11px 8px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-num {
+      font-family: 'Lora', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--sage-dark);
+      line-height: 1;
+    }
+    .stat-lbl {
+      font-size: 0.65rem;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 3px;
+    }
+
+    /* =============================
+       PROGRESS BARS
+    ============================= */
+    .progress-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 13px 15px;
+      margin-bottom: 13px;
+      box-shadow: var(--shadow-sm);
+    }
+    .prog-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 7px;
+    }
+    .prog-lbl {
+      font-size: 0.73rem;
+      font-weight: 600;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .prog-pct {
+      font-family: 'Lora', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--sage-dark);
+    }
+    .prog-bar-bg {
+      background: var(--bg-muted);
+      border-radius: 99px;
+      height: 7px;
+      overflow: hidden;
+    }
+    .prog-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--sage-light), var(--sage-dark));
+      transition: width 0.45s ease;
+    }
+    .prog-divider { height: 10px; }
+
+    /* =============================
+       SECTION CARDS
+    ============================= */
+    .section-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 15px 14px;
+      margin-bottom: 13px;
+      box-shadow: var(--shadow);
+    }
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+    .section-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .icon-green  { background: #E4F2E4; }
+    .icon-blue   { background: #E4EEF7; }
+    .icon-purple { background: #EDE4F4; }
+    .icon-yellow { background: #F7F2E0; }
+    .section-title {
+      font-family: 'Lora', serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .section-sub {
+      font-size: 0.7rem;
+      color: var(--text-light);
+      font-weight: 400;
+      margin-top: 1px;
+    }
+
+    /* =============================
+       EXERCISE ITEMS
+    ============================= */
+    .exercise {
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      padding: 11px 12px;
+      margin-bottom: 9px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .exercise.ex-done {
+      border-color: var(--sage-light);
+      background: #F0F8F0;
+    }
+    .ex-name {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+    .ex-meta {
+      font-size: 0.72rem;
+      color: var(--amber);
+      font-weight: 600;
+      margin: 2px 0 9px;
+    }
+    .sets-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .set-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--bg-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-mid);
+      transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .set-btn.set-done {
+      background: var(--sage);
+      border-color: var(--sage);
+      color: #fff;
+    }
+    .set-btn:active { transform: scale(0.88); }
+    .sets-hint {
+      font-size: 0.66rem;
+      color: var(--text-light);
+    }
+
+    /* =============================
+       HABITS
+    ============================= */
+    .habit-list { margin: 0; }
+    .habit-row {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--bg-muted);
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .habit-row:last-child { border-bottom: none; }
+    .habit-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      border: 2px solid var(--border);
+      background: var(--bg-card);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0;
+      transition: all 0.15s;
+      color: #fff;
+      font-weight: 700;
+    }
+    .habit-box.habit-checked {
+      background: var(--sage);
+      border-color: var(--sage);
+      font-size: 0.75rem;
+    }
+    .habit-box.habit-checked::after { content: '✓'; }
+    .habit-text {
+      font-size: 0.82rem;
+      color: var(--text);
+    }
+
+    /* =============================
+       NOTES
+    ============================= */
+    .notes-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-mid);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .notes-area {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      padding: 11px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      color: var(--text);
+      background: var(--bg-muted);
+      resize: none;
+      min-height: 90px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      line-height: 1.5;
+    }
+    .notes-area:focus {
+      border-color: var(--sage);
+      background: var(--bg-card);
+    }
+    .notes-area::placeholder { color: var(--text-light); }
+
+    /* =============================
+       STATUS MESSAGE
+    ============================= */
+    .status-msg {
+      border-radius: 11px;
+      padding: 13px 14px;
+      margin-bottom: 13px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      line-height: 1.5;
+      display: none;
+    }
+    .status-msg.msg-complete {
+      display: block;
+      background: #E6F3E6;
+      color: #3A6B3C;
+      border: 1.5px solid #A4C4A6;
+    }
+    .status-msg.msg-incomplete {
+      display: block;
+      background: #FDF0E8;
+      color: #8B4513;
+      border: 1.5px solid #E0B895;
+    }
+    .status-emoji { font-size: 1.1rem; margin-right: 6px; }
+
+    /* =============================
+       ACTION BUTTONS
+    ============================= */
+    .action-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 13px;
+    }
+    .btn {
+      flex: 1;
+      padding: 10px 8px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.77rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s, opacity 0.12s;
+      text-align: center;
+    }
+    .btn:active { transform: scale(0.95); opacity: 0.85; }
+    .btn-sage    { background: var(--sage); color: #fff; }
+    .btn-outline { background: #fff; color: var(--text-mid); border: 1.5px solid var(--border); }
+    .btn-danger  { background: #fff; color: var(--red-soft); border: 1.5px solid #E8BABA; }
+
+    /* =============================
+       TOAST
+    ============================= */
+    .toast {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%) translateY(70px);
+      background: #2A2A2A;
+      color: #fff;
+      padding: 9px 20px;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* =============================
+       ANIMATIONS
+    ============================= */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    .anim { animation: fadeUp 0.22s ease both; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div class="app-title">🧘 Posture Correction Program</div>
+  <div class="app-tagline">8 Week Tracker · Konsistensi membangun postur ideal</div>
+</div>
+
+<!-- WEEK TABS -->
+<div class="week-tabs-wrap">
+  <div class="week-tabs" id="weekTabs"></div>
+</div>
+
+<!-- DAY TABS -->
+<div class="day-tabs-wrap">
+  <div class="day-tabs" id="dayTabs"></div>
+</div>
+
+<!-- MAIN CONTENT (rendered by JS) -->
+<div class="main" id="mainContent"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   PROGRAM DATA — 8 minggu latihan progresif
+   Setiap minggu memiliki fokus, section1, dan section2
+============================================================ */
+const WEEKS = [
+  {
+    week: 1,
+    title: "Minggu 1 — Fondasi",
+    focus: "Membangun kesadaran postur & mobilitas dasar",
+    section1: [
+      { name: "Chin Tuck",               sets: 2, detail: "10 repetisi" },
+      { name: "Thoracic Extension",       sets: 2, detail: "10 repetisi" },
+      { name: "Shoulder Blade Squeeze",   sets: 2, detail: "10 repetisi" },
+      { name: "Doorway Pec Stretch",      sets: 2, detail: "20 detik per sisi" },
+    ],
+    section2: [
+      { name: "Band Row",                 sets: 3, detail: "10 repetisi" },
+      { name: "Wall Angel / Wall Slide",  sets: 2, detail: "8 repetisi" },
+      { name: "Dead Bug",                 sets: 2, detail: "8 repetisi per sisi" },
+      { name: "Bird Dog",                 sets: 2, detail: "6 repetisi per sisi" },
+      { name: "Glute Bridge",             sets: 2, detail: "12 repetisi" },
+      { name: "Side Plank",               sets: 2, detail: "15 detik per sisi" },
+    ],
+  },
+  {
+    week: 2,
+    title: "Minggu 2 — Adaptasi",
+    focus: "Mempertajam gerakan & memperpanjang durasi",
+    section1: [
+      { name: "Chin Tuck",               sets: 3, detail: "10 repetisi" },
+      { name: "Thoracic Extension",       sets: 2, detail: "12 repetisi" },
+      { name: "Shoulder Blade Squeeze",   sets: 3, detail: "10 repetisi" },
+      { name: "Doorway Pec Stretch",      sets: 2, detail: "25 detik per sisi" },
+    ],
+    section2: [
+      { name: "Band Row",                 sets: 3, detail: "12 repetisi" },
+      { name: "Wall Angel / Wall Slide",  sets: 3, detail: "10 repetisi" },
+      { name: "Dead Bug",                 sets: 3, detail: "8 repetisi per sisi" },
+      { name: "Bird Dog",                 sets: 3, detail: "6 repetisi per sisi" },
+      { name: "Glute Bridge",             sets: 3, detail: "12 repetisi" },
+      { name: "Side Plank",               sets: 2, detail: "20 detik per sisi" },
+    ],
+  },
+  {
+    week: 3,
+    title: "Minggu 3 — Pembangunan",
+    focus: "Meningkatkan volume & aktivasi otot inti",
+    section1: [
+      { name: "Chin Tuck",               sets: 3, detail: "12 repetisi" },
+      { name: "Thoracic Extension",       sets: 3, detail: "10 repetisi" },
+      { name: "Shoulder Blade Squeeze",   sets: 3, detail: "12 repetisi" },
+      { name: "Doorway Pec Stretch",      sets: 2, detail: "30 detik per sisi" },
+    ],
+    section2: [
+      { name: "Band Row",                 sets: 3, detail: "12 repetisi" },
+      { name: "Wall Angel / Wall Slide",  sets: 3, detail: "10 repetisi" },
+      { name: "Dead Bug",                 sets: 3, detail: "10 repetisi per sisi" },
+      { name: "Bird Dog",                 sets: 3, detail: "8 repetisi per sisi" },
+      { name: "Glute Bridge",             sets: 3, detail: "15 repetisi" },
+      { name: "Side Plank",               sets: 3, detail: "20 detik per sisi" },
+    ],
+  },
+  {
+    week: 4,
+    title: "Minggu 4 — Penguatan",
+    focus: "Kontrol motor dan stabilitas tulang belakang",
+    section1: [
+      { name: "Chin Tuck",               sets: 3, detail: "12 repetisi" },
+      { name: "Thoracic Extension",       sets: 3, detail: "12 repetisi" },
+      { name: "Shoulder Blade Squeeze",   sets: 3, detail: "15 repetisi" },
+      { name: "Doorway Pec Stretch",      sets: 3, detail: "30 detik per sisi" },
+    ],
+    section2: [
+      { name: "Band Row",                 sets: 4, detail: "12 repetisi" },
+      { name: "Wall Angel / Wall Slide",  sets: 3, detail: "12 repetisi" },
+      { name: "Dead Bug",                 sets: 3, detail: "10 repetisi per sisi" },
+      { name: "Bird Dog",                 sets: 3, detail: "10 repetisi per sisi" },
+      { name: "Glute Bridge",             sets: 3, detail: "15 repetisi" },
+      { name: "Side Plank",               sets: 3, detail: "25 detik per sisi" },
+    ],
+  },
+  {
+    week: 5,
+    title: "Minggu 5 — Intensifikasi",
+    focus: "Meningkatkan kekuatan fungsional postur",
+    section1: [
+      { name: "Chin Tuck",               sets: 3, detail: "15 repetisi" },
+      { name: "Thoracic Extension",       sets: 3, detail: "12 repetisi" },
+      { name: "Shoulder Blade Squeeze",   sets: 3, detail: "15 repetisi" },
+      { name: "Doorway Pec Stretch",      sets: 3, detail: "30 detik per sisi" },
+    ],
+    section2: [
+      { name: "Band Row",                 sets: 4, detail: "12 repetisi" },
+      { name: "Wall Angel / Wall Slide",  sets: 3, detail: "12 repetisi" },
+      { name: "Dead Bug",                 sets: 3, detail: "12 repetisi per sisi" },
+      { name: "Bird Dog",                 sets: 3, detail: "10 repetisi per sisi" },
+      { name: "Glute Bridge",             sets: 3, detail: "20 repetisi" },
+      { name: "Side Plank",               sets: 3, detail: "30 detik per sisi" },
+    ],
+  },
+  {
+    week: 6,
+    title: "Minggu 6 — Konsolidasi",
+    focus: "Otomatisasi postur dalam aktivitas sehari-hari",
+    section1: [
+      { name: "Chin Tuck",               sets: 3, detail: "15 repetisi" },
+      { name: "Thoracic Extension",       sets: 3, detail: "15 repetisi" },
+      { name: "Shoulder Blade Squeeze",   sets: 3, detail: "15 repetisi" },
+      { name: "Doorway Pec Stretch",      sets: 3, detail: "35 detik per sisi" },
+    ],
+    section2: [
+      { name: "Band Row",                 sets: 4, detail: "15 repetisi" },
+      { name: "Wall Angel / Wall Slide",  sets: 4, detail: "12 repetisi" },
+      { name: "Dead Bug",                 sets: 4, detail: "10 repetisi per sisi" },
+      { name: "Bird Dog",                 sets: 3, detail: "12 repetisi per sisi" },
+      { name: "Glute Bridge",             sets: 3, detail: "20 repetisi" },
+      { name: "Side Plank",               sets: 3, detail: "35 detik per sisi" },
+    ],
+  },
+  {
+    week: 7,
+    title: "Minggu 7 — Pematangan",
+    focus: "Stamina postur dan kontrol penuh",
+    section1: [
+      { name: "Chin Tuck",               sets: 3, detail: "15 repetisi" },
+      { name: "Thoracic Extension",       sets: 3, detail: "15 repetisi" },
+      { name: "Shoulder Blade Squeeze",   sets: 4, detail: "15 repetisi" },
+      { name: "Doorway Pec Stretch",      sets: 3, detail: "40 detik per sisi" },
+    ],
+    section2: [
+      { name: "Band Row",                 sets: 4, detail: "15 repetisi" },
+      { name: "Wall Angel / Wall Slide",  sets: 4, detail: "12 repetisi" },
+      { name: "Dead Bug",                 sets: 4, detail: "12 repetisi per sisi" },
+      { name: "Bird Dog",                 sets: 4, detail: "10 repetisi per sisi" },
+      { name: "Glute Bridge",             sets: 4, detail: "20 repetisi" },
+      { name: "Side Plank",               sets: 3, detail: "40 detik per sisi" },
+    ],
+  },
+  {
+    week: 8,
+    title: "Minggu 8 — Pembuktian",
+    focus: "Program penuh · Postur sebagai kebiasaan permanen",
+    section1: [
+      { name: "Chin Tuck",               sets: 3, detail: "15 repetisi" },
+      { name: "Thoracic Extension",       sets: 3, detail: "15 repetisi" },
+      { name: "Shoulder Blade Squeeze",   sets: 4, detail: "15 repetisi" },
+      { name: "Doorway Pec Stretch",      sets: 3, detail: "45 detik per sisi" },
+    ],
+    section2: [
+      { name: "Band Row",                 sets: 4, detail: "15 repetisi" },
+      { name: "Wall Angel / Wall Slide",  sets: 4, detail: "15 repetisi" },
+      { name: "Dead Bug",                 sets: 4, detail: "12 repetisi per sisi" },
+      { name: "Bird Dog",                 sets: 4, detail: "12 repetisi per sisi" },
+      { name: "Glute Bridge",             sets: 4, detail: "20 repetisi" },
+      { name: "Side Plank",               sets: 4, detail: "40 detik per sisi" },
+    ],
+  },
+];
+
+const HABITS = [
+  "Berdiri setiap 30–45 menit",
+  "HP sejajar mata saat digunakan",
+  "Bahu tidak membungkuk ke depan",
+  "Duduk dengan tulang belakang netral",
+  "Tidak menunduk dalam waktu lama",
+];
+
+/* ============================================================
+   STATE
+============================================================ */
+let currentWeek = 0; // 0-indexed
+let currentDay  = 0; // 0-indexed (0=Hari 1)
+
+/* ============================================================
+   LOCAL STORAGE HELPERS
+============================================================ */
+const STORAGE_KEY = 'posture_v2';
+
+function loadAll() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveAll(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+// Key: "w{week}_d{day}"
+function dayKey(w, d) { return `w${w}_d${d}`; }
+
+function getDayData(w, d) {
+  const all = loadAll();
+  const key = dayKey(w, d);
+  if (!all[key]) {
+    // Build default state from program
+    const wData = WEEKS[w];
+    const s1Sets = wData.section1.map(e => Array(e.sets).fill(false));
+    const s2Sets = wData.section2.map(e => Array(e.sets).fill(false));
+    all[key] = { s1: s1Sets, s2: s2Sets, habits: Array(HABITS.length).fill(false), notes: "" };
+    saveAll(all);
+  }
+  return all[key];
+}
+
+function setDayData(w, d, data) {
+  const all = loadAll();
+  all[dayKey(w, d)] = data;
+  saveAll(all);
+}
+
+/* ============================================================
+   CALCULATIONS
+============================================================ */
+function calcDayProgress(w, d) {
+  const data = getDayData(w, d);
+  const wData = WEEKS[w];
+  let total = 0, done = 0;
+  // section 1 sets
+  wData.section1.forEach((e, i) => {
+    total += e.sets;
+    done  += data.s1[i].filter(Boolean).length;
+  });
+  // section 2 sets
+  wData.section2.forEach((e, i) => {
+    total += e.sets;
+    done  += data.s2[i].filter(Boolean).length;
+  });
+  // habits count (each habit counts as 1)
+  total += HABITS.length;
+  done  += data.habits.filter(Boolean).length;
+  return total === 0 ? 0 : Math.round((done / total) * 100);
+}
+
+function calcWeekProgress(w) {
+  let total = 0;
+  for (let d = 0; d < 7; d++) total += calcDayProgress(w, d);
+  return Math.round(total / 7);
+}
+
+function isDayDone(w, d) { return calcDayProgress(w, d) === 100; }
+
+/* ============================================================
+   RENDER WEEK TABS
+============================================================ */
+function renderWeekTabs() {
+  const el = document.getElementById('weekTabs');
+  el.innerHTML = WEEKS.map((w, i) => `
+    <button class="week-tab ${i === currentWeek ? 'active' : ''}"
+            onclick="selectWeek(${i})">Minggu ${w.week}</button>
+  `).join('');
+}
+
+/* ============================================================
+   RENDER DAY TABS
+============================================================ */
+function renderDayTabs() {
+  const el = document.getElementById('dayTabs');
+  el.innerHTML = Array.from({length:7}, (_, i) => {
+    const done = isDayDone(currentWeek, i);
+    return `<button class="day-tab ${i === currentDay ? 'active' : ''} ${done ? 'done-flag' : ''}"
+                    onclick="selectDay(${i})">Hari ${i+1}</button>`;
+  }).join('');
+}
+
+/* ============================================================
+   RENDER MAIN CONTENT
+============================================================ */
+function renderMain() {
+  const w = currentWeek, d = currentDay;
+  const wData = WEEKS[w];
+  const data  = getDayData(w, d);
+  const dayPct  = calcDayProgress(w, d);
+  const weekPct = calcWeekProgress(w);
+
+  // Count completed sets for stats
+  let doneToday = 0, totalToday = 0;
+  wData.section1.forEach((e, i) => {
+    totalToday += e.sets;
+    doneToday  += data.s1[i].filter(Boolean).length;
+  });
+  wData.section2.forEach((e, i) => {
+    totalToday += e.sets;
+    doneToday  += data.s2[i].filter(Boolean).length;
+  });
+
+  // Status message
+  let statusHtml = '';
+  if (dayPct === 100) {
+    statusHtml = `<div class="status-msg msg-complete anim">
+      <span class="status-emoji">🎉</span>Latihan hari ini selesai. Konsistensi lebih penting dari kesempurnaan.
+    </div>`;
+  } else if (doneToday > 0 || data.habits.some(Boolean)) {
+    statusHtml = `<div class="status-msg msg-incomplete anim">
+      <span class="status-emoji">⚠️</span>Program belum selesai hari ini. Jangan menipu diri sendiri.
+    </div>`;
+  }
+
+  // Section 1 HTML
+  const s1Html = wData.section1.map((ex, ei) => {
+    const allDone = data.s1[ei].every(Boolean);
+    const setsHtml = data.s1[ei].map((isDone, si) => `
+      <button class="set-btn ${isDone ? 'set-done' : ''}"
+              onclick="toggleSet(1, ${ei}, ${si})">S${si+1}</button>
+    `).join('');
+    return `
+      <div class="exercise ${allDone ? 'ex-done' : ''}" id="s1_${ei}">
+        <div class="ex-name">${ex.name}</div>
+        <div class="ex-meta">${ex.sets} set × ${ex.detail}</div>
+        <div class="sets-row">
+          ${setsHtml}
+          <span class="sets-hint">${data.s1[ei].filter(Boolean).length}/${ex.sets} set selesai</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Section 2 HTML
+  const s2Html = wData.section2.map((ex, ei) => {
+    const allDone = data.s2[ei].every(Boolean);
+    const setsHtml = data.s2[ei].map((isDone, si) => `
+      <button class="set-btn ${isDone ? 'set-done' : ''}"
+              onclick="toggleSet(2, ${ei}, ${si})">S${si+1}</button>
+    `).join('');
+    return `
+      <div class="exercise ${allDone ? 'ex-done' : ''}" id="s2_${ei}">
+        <div class="ex-name">${ex.name}</div>
+        <div class="ex-meta">${ex.sets} set × ${ex.detail}</div>
+        <div class="sets-row">
+          ${setsHtml}
+          <span class="sets-hint">${data.s2[ei].filter(Boolean).length}/${ex.sets} set selesai</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Habits HTML
+  const habitsHtml = HABITS.map((h, i) => `
+    <div class="habit-row" onclick="toggleHabit(${i})">
+      <div class="habit-box ${data.habits[i] ? 'habit-checked' : ''}"></div>
+      <span class="habit-text">${h}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('mainContent').innerHTML = `
+    <!-- Week Info -->
+    <div class="week-info anim">
+      <h2>${wData.title}</h2>
+      <p>${wData.focus}</p>
+    </div>
+
+    <!-- Status -->
+    ${statusHtml}
+
+    <!-- Stats -->
+    <div class="stats-row anim">
+      <div class="stat-card">
+        <div class="stat-num">${doneToday}</div>
+        <div class="stat-lbl">Set selesai</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">${totalToday - doneToday}</div>
+        <div class="stat-lbl">Set tersisa</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">${data.habits.filter(Boolean).length}</div>
+        <div class="stat-lbl">Kebiasaan ✓</div>
+      </div>
+    </div>
+
+    <!-- Progress Bars -->
+    <div class="progress-card anim">
+      <div class="prog-row">
+        <span class="prog-lbl">Progress Hari Ini</span>
+        <span class="prog-pct" id="dayPctLabel">${dayPct}%</span>
+      </div>
+      <div class="prog-bar-bg">
+        <div class="prog-bar" id="dayProgressBar" style="width:${dayPct}%"></div>
+      </div>
+      <div class="prog-divider"></div>
+      <div class="prog-row">
+        <span class="prog-lbl">Progress Minggu ${w+1}</span>
+        <span class="prog-pct" id="weekPctLabel">${weekPct}%</span>
+      </div>
+      <div class="prog-bar-bg">
+        <div class="prog-bar" id="weekProgressBar" style="width:${weekPct}%"></div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-row anim">
+      <button class="btn btn-sage"    onclick="markAllToday()">✓ Selesaikan Hari Ini</button>
+      <button class="btn btn-outline" onclick="resetToday()">↺ Reset Hari</button>
+      <button class="btn btn-danger"  onclick="resetAll()">✕ Reset Semua</button>
+    </div>
+
+    <!-- SECTION 1: Reset Postur Harian -->
+    <div class="section-card anim">
+      <div class="section-head">
+        <div class="section-icon icon-green">🌿</div>
+        <div>
+          <div class="section-title">Reset Postur Harian</div>
+          <div class="section-sub">Lakukan setiap hari — 5–10 menit</div>
+        </div>
+      </div>
+      ${s1Html}
+    </div>
+
+    <!-- SECTION 2: Latihan Utama -->
+    <div class="section-card anim">
+      <div class="section-head">
+        <div class="section-icon icon-blue">💪</div>
+        <div>
+          <div class="section-title">Latihan Utama</div>
+          <div class="section-sub">3–4× per minggu — sekitar 20–30 menit</div>
+        </div>
+      </div>
+      ${s2Html}
+    </div>
+
+    <!-- SECTION 3: Kebiasaan Harian -->
+    <div class="section-card anim">
+      <div class="section-head">
+        <div class="section-icon icon-purple">🎯</div>
+        <div>
+          <div class="section-title">Kebiasaan Postur Harian</div>
+          <div class="section-sub">Centang yang berhasil kamu lakukan hari ini</div>
+        </div>
+      </div>
+      <div class="habit-list">${habitsHtml}</div>
+    </div>
+
+    <!-- SECTION 4: Catatan Harian -->
+    <div class="section-card anim">
+      <div class="section-head">
+        <div class="section-icon icon-yellow">📝</div>
+        <div>
+          <div class="section-title">Catatan Harian</div>
+          <div class="section-sub">Nyeri, ketegangan, atau progres hari ini</div>
+        </div>
+      </div>
+      <div class="notes-label">Catatan tubuh hari ini</div>
+      <textarea class="notes-area" id="notesArea"
+                placeholder="Contoh: bahu kanan terasa tegang setelah latihan, punggung bawah lebih lega..."
+                oninput="saveNotes(this.value)">${data.notes}</textarea>
+    </div>
+  `;
+}
+
+/* ============================================================
+   USER INTERACTIONS
+============================================================ */
+function selectWeek(idx) {
+  currentWeek = idx;
+  currentDay  = 0;
+  renderAll();
+}
+
+function selectDay(idx) {
+  currentDay = idx;
+  renderAll();
+}
+
+function renderAll() {
+  renderWeekTabs();
+  renderDayTabs();
+  renderMain();
+}
+
+/* Toggle a set button */
+function toggleSet(section, exIdx, setIdx) {
+  const w = currentWeek, d = currentDay;
+  const data = getDayData(w, d);
+  if (section === 1) data.s1[exIdx][setIdx] = !data.s1[exIdx][setIdx];
+  else               data.s2[exIdx][setIdx] = !data.s2[exIdx][setIdx];
+  setDayData(w, d, data);
+  showToast('Tersimpan ✓');
+  renderAll();
+}
+
+/* Toggle a habit */
+function toggleHabit(idx) {
+  const w = currentWeek, d = currentDay;
+  const data = getDayData(w, d);
+  data.habits[idx] = !data.habits[idx];
+  setDayData(w, d, data);
+  showToast('Kebiasaan diperbarui ✓');
+  renderAll();
+}
+
+/* Save notes (debounced) */
+let noteTimer = null;
+function saveNotes(val) {
+  clearTimeout(noteTimer);
+  noteTimer = setTimeout(() => {
+    const w = currentWeek, d = currentDay;
+    const data = getDayData(w, d);
+    data.notes = val;
+    setDayData(w, d, data);
+    showToast('Catatan tersimpan ✓');
+  }, 700);
+}
+
+/* Mark all exercises + habits done for today */
+function markAllToday() {
+  const w = currentWeek, d = currentDay;
+  const wData = WEEKS[w];
+  const data  = getDayData(w, d);
+  data.s1     = wData.section1.map(e => Array(e.sets).fill(true));
+  data.s2     = wData.section2.map(e => Array(e.sets).fill(true));
+  data.habits = Array(HABITS.length).fill(true);
+  setDayData(w, d, data);
+  showToast('🎉 Semua latihan hari ini ditandai selesai!');
+  renderAll();
+}
+
+/* Reset today's progress */
+function resetToday() {
+  if (!confirm('Reset progress hari ini? Data latihan hari ini akan dihapus.')) return;
+  const w = currentWeek, d = currentDay;
+  const wData = WEEKS[w];
+  const freshData = {
+    s1:     wData.section1.map(e => Array(e.sets).fill(false)),
+    s2:     wData.section2.map(e => Array(e.sets).fill(false)),
+    habits: Array(HABITS.length).fill(false),
+    notes:  getDayData(w, d).notes, // preserve notes
+  };
+  setDayData(w, d, freshData);
+  showToast('Progress hari ini direset');
+  renderAll();
+}
+
+/* Reset entire program */
+function resetAll() {
+  if (!confirm('Reset SELURUH program? Semua progress 8 minggu akan dihapus!')) return;
+  if (!confirm('Yakin? Ini tidak bisa dibatalkan.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  currentWeek = 0;
+  currentDay  = 0;
+  showToast('Program direset dari awal');
+  renderAll();
+}
+
+/* ============================================================
+   TOAST NOTIFICATION
+============================================================ */
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+/* ============================================================
+   INIT — detect current week/day based on today's date
+   (user can override via tabs)
+============================================================ */
+function init() {
+  // Try to find today in localStorage to pick the right week/day
+  // Just default to week 0 day 0 if nothing stored yet; user navigates manually
+  // (optional: auto-jump based on program start date)
+  renderAll();
+}
+
+init();
+</script>
+</body>
+</html>
