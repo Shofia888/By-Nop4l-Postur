@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Posture Correction Program – 8 Week Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:          #F3F0EA;
+      --bg-card:     #FFFFFF;
+      --bg-muted:    #EAE6DF;
+      --border:      #DED9D0;
+      --sage:        #6B9B6E;
+      --sage-light:  #A4C4A6;
+      --sage-dark:   #4A7A4D;
+      --amber:       #C4895A;
+      --amber-light: #E8C4A0;
+      --red-soft:    #C26060;
+      --text:        #2A2A2A;
+      --text-mid:    #666666;
+      --text-light:  #999999;
+      --shadow:      0 2px 12px rgba(0,0,0,0.07);
+      --shadow-sm:   0 1px 4px rgba(0,0,0,0.05);
+      --radius:      14px;
+      --radius-sm:   8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    /* ===== HEADER ===== */
+    .app-header {
+      background: linear-gradient(150deg, #4A7A4D 0%, #6B9B6E 60%, #8AB58D 100%);
+      padding: 18px 18px 14px;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .app-title {
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 2px;
+    }
+    .app-tagline { font-size: 0.72rem; opacity: 0.75; font-weight: 400; }
+    .header-streak {
+      display: flex; flex-direction: column; align-items: center;
+      background: rgba(255,255,255,0.18); border-radius: 12px;
+      padding: 6px 10px; min-width: 52px;
+    }
+    .streak-num { font-family: 'Lora', serif; font-size: 1.4rem; font-weight: 700; line-height: 1; }
+    .streak-lbl { font-size: 0.6rem; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 1px; }
+
+    /* ===== WEEK TABS ===== */
+    .week-tabs-wrap { background: #3E6940; overflow-x: auto; scrollbar-width: none; }
+    .week-tabs-wrap::-webkit-scrollbar { display: none; }
+    .week-tabs { display: flex; padding: 0 12px 12px; gap: 6px; width: max-content; }
+    .week-tab {
+      background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.65);
+      border: none; border-radius: 30px; padding: 5px 13px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.76rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap; transition: all 0.18s ease;
+    }
+    .week-tab.active { background: #fff; color: #3E6940; }
+
+    /* ===== DAY TABS ===== */
+    .day-tabs-wrap { background: var(--bg-muted); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+    .day-tabs-wrap::-webkit-scrollbar { display: none; }
+    .day-tabs { display: flex; padding: 10px 12px; gap: 7px; }
+    .day-tab {
+      background: var(--bg-card); color: var(--text-mid);
+      border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 5px 10px; font-family: 'DM Sans', sans-serif;
+      font-size: 0.73rem; font-weight: 600; cursor: pointer;
+      white-space: nowrap; transition: all 0.15s; min-width: 48px; text-align: center;
+    }
+    .day-tab.active { background: var(--sage); color: #fff; border-color: var(--sage); }
+    .day-tab.done-flag { border-color: var(--sage-light); }
+    .day-tab.done-flag::after { content: ' ✓'; color: var(--sage); font-size: 0.65rem; }
+    .day-tab.active.done-flag::after { color: rgba(255,255,255,0.8); }
+
+    /* ===== BOTTOM NAV ===== */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--bg-card); border-top: 1px solid var(--border);
+      display: flex; z-index: 100; box-shadow: 0 -2px 12px rgba(0,0,0,0.07);
+    }
+    .nav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 9px 4px 11px; border: none; background: none; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-size: 0.62rem; color: var(--text-light);
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; transition: color 0.15s;
+      gap: 3px;
+    }
+    .nav-btn.active { color: var(--sage); }
+    .nav-icon { font-size: 1.2rem; line-height: 1; }
+    .nav-btn.active .nav-icon { filter: saturate(1.5); }
+
+    /* ===== PAGES ===== */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ===== MAIN CONTENT ===== */
+    .main { padding: 14px 14px 110px; max-width: 480px; margin: 0 auto; }
+
+    /* ===== WEEK INFO BAR ===== */
+    .week-info {
+      background: linear-gradient(120deg, var(--amber) 0%, #D4A070 100%);
+      border-radius: var(--radius); padding: 13px 16px; margin-bottom: 13px; color: #fff;
+    }
+    .week-info h2 { font-family: 'Lora', serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 2px; }
+    .week-info p { font-size: 0.73rem; opacity: 0.85; }
+
+    /* ===== STATS ROW ===== */
+    .stats-row { display: flex; gap: 9px; margin-bottom: 13px; }
+    .stat-card { flex: 1; background: var(--bg-card); border-radius: var(--radius-sm); padding: 11px 8px; text-align: center; box-shadow: var(--shadow-sm); }
+    .stat-num { font-family: 'Lora', serif; font-size: 1.6rem; font-weight: 700; color: var(--sage-dark); line-height: 1; }
+    .stat-lbl { font-size: 0.65rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 3px; }
+
+    /* ===== PROGRESS BARS ===== */
+    .progress-card { background: var(--bg-card); border-radius: var(--radius); padding: 13px 15px; margin-bottom: 13px; box-shadow: var(--shadow-sm); }
+    .prog-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
+    .prog-lbl { font-size: 0.73rem; font-weight: 600; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.05em; }
+    .prog-pct { font-family: 'Lora', serif; font-size: 1.05rem; font-weight: 700; color: var(--sage-dark); }
+    .prog-bar-bg { background: var(--bg-muted); border-radius: 99px; height: 7px; overflow: hidden; }
+    .prog-bar { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--sage-light), var(--sage-dark)); transition: width 0.45s ease; }
+    .prog-divider { height: 10px; }
+
+    /* ===== SECTION CARDS ===== */
+    .section-card { background: var(--bg-card); border-radius: var(--radius); padding: 15px 14px; margin-bottom: 13px; box-shadow: var(--shadow); }
+    .section-head { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 12px; }
+    .section-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .icon-green  { background: #E4F2E4; }
+    .icon-blue   { background: #E4EEF7; }
+    .icon-purple { background: #EDE4F4; }
+    .icon-yellow { background: #F7F2E0; }
+    .icon-orange { background: #FDF0E4; }
+    .section-title { font-family: 'Lora', serif; font-size: 0.92rem; font-weight: 700; color: var(--text); }
+    .section-sub { font-size: 0.7rem; color: var(--text-light); font-weight: 400; margin-top: 1px; }
+
+    /* ===== EXERCISE ITEMS ===== */
+    .exercise { border: 1.5px solid var(--border); border-radius: 11px; padding: 11px 12px; margin-bottom: 9px; transition: border-color 0.2s, background 0.2s; }
+    .exercise.ex-done { border-color: var(--sage-light); background: #F0F8F0; }
+    .ex-name { font-weight: 600; font-size: 0.85rem; color: var(--text); }
+    .ex-meta { font-size: 0.72rem; color: var(--amber); font-weight: 600; margin: 2px 0 9px; }
+    .sets-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .set-btn {
+      width: 38px; height: 38px; border-radius: 10px;
+      border: 2px solid var(--border); background: var(--bg-muted);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 0.68rem; font-weight: 700; color: var(--text-mid);
+      transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+      user-select: none; -webkit-user-select: none;
+    }
+    .set-btn.set-done { background: var(--sage); border-color: var(--sage); color: #fff; }
+    .set-btn:active { transform: scale(0.88); }
+    .sets-hint { font-size: 0.66rem; color: var(--text-light); }
+
+    /* ===== HABITS ===== */
+    .habit-list { margin: 0; }
+    .habit-row { display: flex; align-items: center; gap: 11px; padding: 9px 0; border-bottom: 1px solid var(--bg-muted); cursor: pointer; user-select: none; -webkit-user-select: none; }
+    .habit-row:last-child { border-bottom: none; }
+    .habit-box { width: 24px; height: 24px; border-radius: 7px; border: 2px solid var(--border); background: var(--bg-card); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0; transition: all 0.15s; color: #fff; font-weight: 700; }
+    .habit-box.habit-checked { background: var(--sage); border-color: var(--sage); font-size: 0.75rem; }
+    .habit-box.habit-checked::after { content: '✓'; }
+    .habit-text { font-size: 0.82rem; color: var(--text); }
+
+    /* ===== RATING ===== */
+    .rating-row { display: flex; gap: 8px; justify-content: center; padding: 6px 0 4px; }
+    .rating-btn {
+      width: 42px; height: 42px; border-radius: 12px; border: 2px solid var(--border);
+      background: var(--bg-muted); cursor: pointer; font-size: 1.25rem;
+      transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+      user-select: none; -webkit-user-select: none;
+    }
+    .rating-btn.selected { border-color: var(--amber); background: #FDF0E4; transform: scale(1.12); }
+    .rating-label { font-size: 0.72rem; color: var(--text-light); text-align: center; margin-top: 5px; }
+
+    /* ===== NOTES ===== */
+    .notes-label { font-size: 0.75rem; font-weight: 600; color: var(--text-mid); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .notes-area {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 11px;
+      padding: 11px 12px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+      color: var(--text); background: var(--bg-muted); resize: none; min-height: 90px;
+      outline: none; transition: border-color 0.2s, background 0.2s; line-height: 1.5;
+    }
+    .notes-area:focus { border-color: var(--sage); background: var(--bg-card); }
+    .notes-area::placeholder { color: var(--text-light); }
+
+    /* ===== STATUS MSG ===== */
+    .status-msg { border-radius: 11px; padding: 13px 14px; margin-bottom: 13px; font-size: 0.82rem; font-weight: 500; line-height: 1.5; display: none; }
+    .status-msg.msg-complete { display: block; background: #E6F3E6; color: #3A6B3C; border: 1.5px solid #A4C4A6; }
+    .status-msg.msg-incomplete { display: block; background: #FDF0E8; color: #8B4513; border: 1.5px solid #E0B895; }
+    .status-emoji { font-size: 1.1rem; margin-right: 6px; }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-row { display: flex; gap: 8px; margin-bottom: 13px; }
+    .btn { flex: 1; padding: 10px 8px; border-radius: 10px; border: none; font-family: 'DM Sans', sans-serif; font-size: 0.77rem; font-weight: 600; cursor: pointer; transition: transform 0.12s, opacity 0.12s; text-align: center; }
+    .btn:active { transform: scale(0.95); opacity: 0.85; }
+    .btn-sage    { background: var(--sage); color: #fff; }
+    .btn-outline { background: #fff; color: var(--text-mid); border: 1.5px solid var(--border); }
+    .btn-danger  { background: #fff; color: var(--red-soft); border: 1.5px solid #E8BABA; }
+    .btn-amber   { background: var(--amber); color: #fff; }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed; bottom: 72px; left: 50%;
+      transform: translateX(-50%) translateY(70px);
+      background: #2A2A2A; color: #fff; padding: 9px 20px;
+      border-radius: 30px; font-size: 0.75rem; font-weight: 500;
+      opacity: 0; transition: all 0.3s ease; z-index: 1000;
+      pointer-events: none; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ===== TIMER FLOATING ===== */
+    .timer-fab {
+      position: fixed; bottom: 78px; right: 16px;
+      width: 54px; height: 54px; border-radius: 50%;
+      background: var(--sage-dark); color: #fff; border: none;
+      font-size: 1.4rem; cursor: pointer; box-shadow: 0 4px 16px rgba(74,122,77,0.4);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 99; transition: transform 0.15s, background 0.15s;
+    }
+    .timer-fab:active { transform: scale(0.92); }
+    .timer-fab.running { background: var(--red-soft); }
+    .timer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .timer-overlay.open { opacity: 1; pointer-events: all; }
+    .timer-box {
+      background: var(--bg-card); border-radius: 22px; padding: 28px 24px;
+      text-align: center; width: 280px; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    }
+    .timer-display {
+      font-family: 'Lora', serif; font-size: 3.5rem; font-weight: 700;
+      color: var(--sage-dark); line-height: 1; margin: 12px 0 20px;
+    }
+    .timer-presets { display: flex; gap: 8px; justify-content: center; margin-bottom: 18px; }
+    .timer-preset {
+      padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+      background: var(--bg-muted); font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; font-family: 'DM Sans', sans-serif; color: var(--text-mid);
+      transition: all 0.15s;
+    }
+    .timer-preset.sel { background: var(--sage); color: #fff; border-color: var(--sage); }
+    .timer-btns { display: flex; gap: 10px; justify-content: center; }
+    .timer-btn {
+      padding: 10px 22px; border-radius: 11px; border: none;
+      font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; transition: opacity 0.12s;
+    }
+    .timer-btn:active { opacity: 0.8; }
+    .timer-close { font-size: 0.72rem; color: var(--text-light); margin-top: 14px; cursor: pointer; }
+
+    /* ===== CALENDAR PAGE ===== */
+    .cal-header { padding: 16px 14px 0; max-width: 480px; margin: 0 auto; }
+    .cal-title { font-family: 'Lora', serif; font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .cal-sub { font-size: 0.73rem; color: var(--text-light); margin-bottom: 14px; }
+    .cal-start-row {
+      background: var(--bg-card); border-radius: var(--radius-sm); padding: 11px 13px;
+      margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+    }
+    .cal-start-lbl { font-size: 0.78rem; font-weight: 600; color: var(--text-mid); }
+    .cal-date-input {
+      border: 1.5px solid var(--border); border-radius: 8px; padding: 5px 9px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.78rem; color: var(--text);
+      background: var(--bg-muted); outline: none;
+    }
+    .cal-grid-wrap { padding: 0 14px 110px; max-width: 480px; margin: 0 auto; }
+    .cal-week-block { margin-bottom: 16px; }
+    .cal-week-label {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-mid); margin-bottom: 7px;
+    }
+    .cal-days-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+    .cal-day {
+      aspect-ratio: 1; border-radius: 9px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; cursor: pointer;
+      font-size: 0.65rem; font-weight: 600; transition: transform 0.12s;
+      border: 1.5px solid transparent; position: relative; gap: 2px;
+    }
+    .cal-day:active { transform: scale(0.9); }
+    .cal-day-num { font-family: 'Lora', serif; font-size: 0.85rem; font-weight: 700; line-height: 1; }
+    .cal-day-date { font-size: 0.55rem; font-weight: 500; opacity: 0.7; }
+    .cal-day.not-started { background: var(--bg-muted); border-color: var(--border); color: var(--text-light); }
+    .cal-day.partial     { background: #FDF3EA; border-color: #E8C4A0; color: var(--amber); }
+    .cal-day.done        { background: #E4F2E4; border-color: var(--sage-light); color: var(--sage-dark); }
+    .cal-day.today-mark  { box-shadow: 0 0 0 2px var(--sage-dark); }
+    .cal-day.current-sel { box-shadow: 0 0 0 2.5px var(--amber); }
+    .cal-pct { font-size: 0.52rem; font-weight: 700; }
+
+    /* ===== SUMMARY PAGE ===== */
+    .sum-wrap { padding: 14px 14px 110px; max-width: 480px; margin: 0 auto; }
+    .sum-hero {
+      background: linear-gradient(135deg, #4A7A4D 0%, #6B9B6E 100%);
+      border-radius: var(--radius); padding: 22px 18px; margin-bottom: 16px; color: #fff; text-align: center;
+    }
+    .sum-big { font-family: 'Lora', serif; font-size: 3rem; font-weight: 700; line-height: 1; }
+    .sum-big-lbl { font-size: 0.75rem; opacity: 0.8; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .sum-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 14px; }
+    .sum-stat-card { background: var(--bg-card); border-radius: var(--radius-sm); padding: 14px 10px; text-align: center; box-shadow: var(--shadow-sm); }
+    .sum-stat-num { font-family: 'Lora', serif; font-size: 1.8rem; font-weight: 700; color: var(--sage-dark); line-height: 1; }
+    .sum-stat-lbl { font-size: 0.65rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
+    .week-progress-list { background: var(--bg-card); border-radius: var(--radius); padding: 15px 14px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+    .week-prog-item { margin-bottom: 12px; }
+    .week-prog-item:last-child { margin-bottom: 0; }
+    .week-prog-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+    .week-prog-name { font-size: 0.75rem; font-weight: 600; color: var(--text-mid); }
+    .week-prog-pct { font-family: 'Lora', serif; font-size: 0.9rem; font-weight: 700; color: var(--sage-dark); }
+    .week-rating-avg { font-size: 0.7rem; color: var(--text-light); margin-left: 6px; }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    .anim { animation: fadeUp 0.22s ease both; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+    .pulsing { animation: pulse 1s infinite; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div>
+    <div class="app-title">🧘 Posture Correction</div>
+    <div class="app-tagline">8 Week Tracker · Konsistensi membangun postur ideal</div>
+  </div>
+  <div class="header-streak" id="headerStreak">
+    <div class="streak-num" id="streakNum">0</div>
+    <div class="streak-lbl">🔥 Hari</div>
+  </div>
+</div>
+
+<!-- ===== PAGE: LATIHAN ===== -->
+<div class="page active" id="pageLatihan">
+  <div class="week-tabs-wrap">
+    <div class="week-tabs" id="weekTabs"></div>
+  </div>
+  <div class="day-tabs-wrap">
+    <div class="day-tabs" id="dayTabs"></div>
+  </div>
+  <div class="main" id="mainContent"></div>
+</div>
+
+<!-- ===== PAGE: KALENDER ===== -->
+<div class="page" id="pageKalender">
+  <div class="cal-header">
+    <div class="cal-title">📅 Kalender Program</div>
+    <div class="cal-sub">Tap hari untuk langsung navigasi ke sesi latihan</div>
+    <div class="cal-start-row">
+      <span class="cal-start-lbl">📌 Tanggal mulai program</span>
+      <input type="date" class="cal-date-input" id="startDateInput" onchange="onStartDateChange(this.value)" />
+    </div>
+  </div>
+  <div class="cal-grid-wrap" id="calGrid"></div>
+</div>
+
+<!-- ===== PAGE: RINGKASAN ===== -->
+<div class="page" id="pageRingkasan">
+  <div class="sum-wrap" id="sumWrap"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="navLatihan" onclick="switchPage('Latihan')">
+    <span class="nav-icon">🏋️</span>Latihan
+  </button>
+  <button class="nav-btn" id="navKalender" onclick="switchPage('Kalender')">
+    <span class="nav-icon">📅</span>Kalender
+  </button>
+  <button class="nav-btn" id="navRingkasan" onclick="switchPage('Ringkasan')">
+    <span class="nav-icon">📊</span>Ringkasan
+  </button>
+</div>
+
+<!-- TIMER FAB -->
+<button class="timer-fab" id="timerFab" onclick="openTimer()" title="Timer Istirahat">⏱</button>
+
+<!-- TIMER OVERLAY -->
+<div class="timer-overlay" id="timerOverlay">
+  <div class="timer-box">
+    <div style="font-family:'Lora',serif;font-size:1rem;font-weight:700;color:var(--text);">⏱ Timer Istirahat</div>
+    <div class="timer-display" id="timerDisplay">60</div>
+    <div class="timer-presets">
+      <button class="timer-preset sel" onclick="selectPreset(30)" id="pre30">30d</button>
+      <button class="timer-preset"     onclick="selectPreset(45)" id="pre45">45d</button>
+      <button class="timer-preset"     onclick="selectPreset(60)" id="pre60">60d</button>
+      <button class="timer-preset"     onclick="selectPreset(90)" id="pre90">90d</button>
+    </div>
+    <div class="timer-btns">
+      <button class="timer-btn btn-sage" style="background:var(--sage);color:#fff;" onclick="startTimer()">▶ Mulai</button>
+      <button class="timer-btn btn-outline" style="border:1.5px solid var(--border);background:#fff;color:var(--text-mid);" onclick="resetTimer()">↺ Reset</button>
+    </div>
+    <div class="timer-close" onclick="closeTimer()">✕ Tutup</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   PROGRAM DATA
+============================================================ */
+const WEEKS = [
+  { week:1, title:"Minggu 1 — Fondasi",      focus:"Membangun kesadaran postur & mobilitas dasar",
+    section1:[
+      {name:"Chin Tuck",sets:2,detail:"10 repetisi"},
+      {name:"Thoracic Extension",sets:2,detail:"10 repetisi"},
+      {name:"Shoulder Blade Squeeze",sets:2,detail:"10 repetisi"},
+      {name:"Doorway Pec Stretch",sets:2,detail:"20 detik per sisi"},
+    ],
+    section2:[
+      {name:"Band Row",sets:3,detail:"10 repetisi"},
+      {name:"Wall Angel / Wall Slide",sets:2,detail:"8 repetisi"},
+      {name:"Dead Bug",sets:2,detail:"8 repetisi per sisi"},
+      {name:"Bird Dog",sets:2,detail:"6 repetisi per sisi"},
+      {name:"Glute Bridge",sets:2,detail:"12 repetisi"},
+      {name:"Side Plank",sets:2,detail:"15 detik per sisi"},
+    ],
+  },
+  { week:2, title:"Minggu 2 — Adaptasi",     focus:"Mempertajam gerakan & memperpanjang durasi",
+    section1:[
+      {name:"Chin Tuck",sets:3,detail:"10 repetisi"},
+      {name:"Thoracic Extension",sets:2,detail:"12 repetisi"},
+      {name:"Shoulder Blade Squeeze",sets:3,detail:"10 repetisi"},
+      {name:"Doorway Pec Stretch",sets:2,detail:"25 detik per sisi"},
+    ],
+    section2:[
+      {name:"Band Row",sets:3,detail:"12 repetisi"},
+      {name:"Wall Angel / Wall Slide",sets:3,detail:"10 repetisi"},
+      {name:"Dead Bug",sets:3,detail:"8 repetisi per sisi"},
+      {name:"Bird Dog",sets:3,detail:"6 repetisi per sisi"},
+      {name:"Glute Bridge",sets:3,detail:"12 repetisi"},
+      {name:"Side Plank",sets:2,detail:"20 detik per sisi"},
+    ],
+  },
+  { week:3, title:"Minggu 3 — Pembangunan",  focus:"Meningkatkan volume & aktivasi otot inti",
+    section1:[
+      {name:"Chin Tuck",sets:3,detail:"12 repetisi"},
+      {name:"Thoracic Extension",sets:3,detail:"10 repetisi"},
+      {name:"Shoulder Blade Squeeze",sets:3,detail:"12 repetisi"},
+      {name:"Doorway Pec Stretch",sets:2,detail:"30 detik per sisi"},
+    ],
+    section2:[
+      {name:"Band Row",sets:3,detail:"12 repetisi"},
+      {name:"Wall Angel / Wall Slide",sets:3,detail:"10 repetisi"},
+      {name:"Dead Bug",sets:3,detail:"10 repetisi per sisi"},
+      {name:"Bird Dog",sets:3,detail:"8 repetisi per sisi"},
+      {name:"Glute Bridge",sets:3,detail:"15 repetisi"},
+      {name:"Side Plank",sets:3,detail:"20 detik per sisi"},
+    ],
+  },
+  { week:4, title:"Minggu 4 — Penguatan",    focus:"Kontrol motor dan stabilitas tulang belakang",
+    section1:[
+      {name:"Chin Tuck",sets:3,detail:"12 repetisi"},
+      {name:"Thoracic Extension",sets:3,detail:"12 repetisi"},
+      {name:"Shoulder Blade Squeeze",sets:3,detail:"15 repetisi"},
+      {name:"Doorway Pec Stretch",sets:3,detail:"30 detik per sisi"},
+    ],
+    section2:[
+      {name:"Band Row",sets:4,detail:"12 repetisi"},
+      {name:"Wall Angel / Wall Slide",sets:3,detail:"12 repetisi"},
+      {name:"Dead Bug",sets:3,detail:"10 repetisi per sisi"},
+      {name:"Bird Dog",sets:3,detail:"10 repetisi per sisi"},
+      {name:"Glute Bridge",sets:3,detail:"15 repetisi"},
+      {name:"Side Plank",sets:3,detail:"25 detik per sisi"},
+    ],
+  },
+  { week:5, title:"Minggu 5 — Intensifikasi", focus:"Meningkatkan kekuatan fungsional postur",
+    section1:[
+      {name:"Chin Tuck",sets:3,detail:"15 repetisi"},
+      {name:"Thoracic Extension",sets:3,detail:"12 repetisi"},
+      {name:"Shoulder Blade Squeeze",sets:3,detail:"15 repetisi"},
+      {name:"Doorway Pec Stretch",sets:3,detail:"30 detik per sisi"},
+    ],
+    section2:[
+      {name:"Band Row",sets:4,detail:"12 repetisi"},
+      {name:"Wall Angel / Wall Slide",sets:3,detail:"12 repetisi"},
+      {name:"Dead Bug",sets:3,detail:"12 repetisi per sisi"},
+      {name:"Bird Dog",sets:3,detail:"10 repetisi per sisi"},
+      {name:"Glute Bridge",sets:3,detail:"20 repetisi"},
+      {name:"Side Plank",sets:3,detail:"30 detik per sisi"},
+    ],
+  },
+  { week:6, title:"Minggu 6 — Konsolidasi",  focus:"Otomatisasi postur dalam aktivitas sehari-hari",
+    section1:[
+      {name:"Chin Tuck",sets:3,detail:"15 repetisi"},
+      {name:"Thoracic Extension",sets:3,detail:"15 repetisi"},
+      {name:"Shoulder Blade Squeeze",sets:3,detail:"15 repetisi"},
+      {name:"Doorway Pec Stretch",sets:3,detail:"35 detik per sisi"},
+    ],
+    section2:[
+      {name:"Band Row",sets:4,detail:"15 repetisi"},
+      {name:"Wall Angel / Wall Slide",sets:4,detail:"12 repetisi"},
+      {name:"Dead Bug",sets:4,detail:"10 repetisi per sisi"},
+      {name:"Bird Dog",sets:3,detail:"12 repetisi per sisi"},
+      {name:"Glute Bridge",sets:3,detail:"20 repetisi"},
+      {name:"Side Plank",sets:3,detail:"35 detik per sisi"},
+    ],
+  },
+  { week:7, title:"Minggu 7 — Pematangan",   focus:"Stamina postur dan kontrol penuh",
+    section1:[
+      {name:"Chin Tuck",sets:3,detail:"15 repetisi"},
+      {name:"Thoracic Extension",sets:3,detail:"15 repetisi"},
+      {name:"Shoulder Blade Squeeze",sets:4,detail:"15 repetisi"},
+      {name:"Doorway Pec Stretch",sets:3,detail:"40 detik per sisi"},
+    ],
+    section2:[
+      {name:"Band Row",sets:4,detail:"15 repetisi"},
+      {name:"Wall Angel / Wall Slide",sets:4,detail:"12 repetisi"},
+      {name:"Dead Bug",sets:4,detail:"12 repetisi per sisi"},
+      {name:"Bird Dog",sets:4,detail:"10 repetisi per sisi"},
+      {name:"Glute Bridge",sets:4,detail:"20 repetisi"},
+      {name:"Side Plank",sets:3,detail:"40 detik per sisi"},
+    ],
+  },
+  { week:8, title:"Minggu 8 — Pembuktian",   focus:"Program penuh · Postur sebagai kebiasaan permanen",
+    section1:[
+      {name:"Chin Tuck",sets:3,detail:"15 repetisi"},
+      {name:"Thoracic Extension",sets:3,detail:"15 repetisi"},
+      {name:"Shoulder Blade Squeeze",sets:4,detail:"15 repetisi"},
+      {name:"Doorway Pec Stretch",sets:3,detail:"45 detik per sisi"},
+    ],
+    section2:[
+      {name:"Band Row",sets:4,detail:"15 repetisi"},
+      {name:"Wall Angel / Wall Slide",sets:4,detail:"15 repetisi"},
+      {name:"Dead Bug",sets:4,detail:"12 repetisi per sisi"},
+      {name:"Bird Dog",sets:4,detail:"12 repetisi per sisi"},
+      {name:"Glute Bridge",sets:4,detail:"20 repetisi"},
+      {name:"Side Plank",sets:4,detail:"40 detik per sisi"},
+    ],
+  },
+];
+
+const HABITS = [
+  "Berdiri setiap 30–45 menit",
+  "HP sejajar mata saat digunakan",
+  "Bahu tidak membungkuk ke depan",
+  "Duduk dengan tulang belakang netral",
+  "Tidak menunduk dalam waktu lama",
+];
+
+const RATINGS = ['😴','😣','😐','😊','💪'];
+const RATING_LABELS = ['Sangat Lelah','Kurang Enak','Biasa','Baik','Luar Biasa!'];
+
+/* ============================================================
+   STATE
+============================================================ */
+let currentWeek = 0;
+let currentDay  = 0;
+let currentPage = 'Latihan';
+
+/* ============================================================
+   LOCAL STORAGE
+============================================================ */
+const STORAGE_KEY = 'posture_v3';
+
+function loadAll() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveAll(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+function dayKey(w, d) { return `w${w}_d${d}`; }
+
+function getDayData(w, d) {
+  const all = loadAll();
+  const key = dayKey(w, d);
+  if (!all[key]) {
+    const wData = WEEKS[w];
+    const s1Sets = wData.section1.map(e => Array(e.sets).fill(false));
+    const s2Sets = wData.section2.map(e => Array(e.sets).fill(false));
+    all[key] = { s1: s1Sets, s2: s2Sets, habits: Array(HABITS.length).fill(false), notes: "", rating: 0 };
+    saveAll(all);
+  }
+  // ensure rating field exists in old data
+  if (!all[key].rating) { all[key].rating = 0; saveAll(all); }
+  return all[key];
+}
+
+function setDayData(w, d, data) {
+  const all = loadAll(); all[dayKey(w, d)] = data; saveAll(all);
+}
+
+function getStartDate() { return loadAll().startDate || null; }
+function setStartDate(val) { const all = loadAll(); all.startDate = val; saveAll(all); }
+
+/* ============================================================
+   CALCULATIONS
+============================================================ */
+function calcDayProgress(w, d) {
+  const data = getDayData(w, d);
+  const wData = WEEKS[w];
+  let total = 0, done = 0;
+  wData.section1.forEach((e, i) => { total += e.sets; done += data.s1[i].filter(Boolean).length; });
+  wData.section2.forEach((e, i) => { total += e.sets; done += data.s2[i].filter(Boolean).length; });
+  total += HABITS.length;
+  done  += data.habits.filter(Boolean).length;
+  return total === 0 ? 0 : Math.round((done / total) * 100);
+}
+
+function calcWeekProgress(w) {
+  let total = 0;
+  for (let d = 0; d < 7; d++) total += calcDayProgress(w, d);
+  return Math.round(total / 7);
+}
+
+function isDayDone(w, d) { return calcDayProgress(w, d) === 100; }
+
+function calcOverallProgress() {
+  let total = 0;
+  for (let w = 0; w < 8; w++) for (let d = 0; d < 7; d++) total += calcDayProgress(w, d);
+  return Math.round(total / 56);
+}
+
+function calcStreak() {
+  // Count consecutive completed days backwards from the last done day
+  let streak = 0;
+  for (let w = 7; w >= 0; w--) {
+    for (let d = 6; d >= 0; d--) {
+      if (isDayDone(w, d)) streak++;
+      else if (streak > 0) return streak; // broken
+    }
+  }
+  return streak;
+}
+
+function calcBestStreak() {
+  let best = 0, cur = 0;
+  for (let w = 0; w < 8; w++) {
+    for (let d = 0; d < 7; d++) {
+      if (isDayDone(w, d)) { cur++; if (cur > best) best = cur; }
+      else cur = 0;
+    }
+  }
+  return best;
+}
+
+function calcTotalSetsDone() {
+  let done = 0;
+  for (let w = 0; w < 8; w++) {
+    for (let d = 0; d < 7; d++) {
+      const data = getDayData(w, d);
+      data.s1.forEach(sets => { done += sets.filter(Boolean).length; });
+      data.s2.forEach(sets => { done += sets.filter(Boolean).length; });
+    }
+  }
+  return done;
+}
+
+function calcDaysStarted() {
+  let count = 0;
+  for (let w = 0; w < 8; w++)
+    for (let d = 0; d < 7; d++)
+      if (calcDayProgress(w, d) > 0) count++;
+  return count;
+}
+
+function getDateForDay(w, d) {
+  const start = getStartDate();
+  if (!start) return null;
+  const base = new Date(start);
+  base.setDate(base.getDate() + (w * 7 + d));
+  return base;
+}
+
+function isToday(w, d) {
+  const dt = getDateForDay(w, d);
+  if (!dt) return false;
+  const now = new Date();
+  return dt.toDateString() === now.toDateString();
+}
+
+function formatShortDate(date) {
+  if (!date) return '';
+  return `${date.getDate()}/${date.getMonth()+1}`;
+}
+
+/* ============================================================
+   PAGE NAVIGATION
+============================================================ */
+function switchPage(name) {
+  currentPage = name;
+  ['Latihan','Kalender','Ringkasan'].forEach(p => {
+    document.getElementById('page'+p).classList.toggle('active', p === name);
+    document.getElementById('nav'+p).classList.toggle('active', p === name);
+  });
+  if (name === 'Kalender') renderCalendar();
+  if (name === 'Ringkasan') renderSummary();
+}
+
+/* ============================================================
+   RENDER STREAK
+============================================================ */
+function renderStreak() {
+  document.getElementById('streakNum').textContent = calcStreak();
+}
+
+/* ============================================================
+   RENDER WEEK TABS
+============================================================ */
+function renderWeekTabs() {
+  const el = document.getElementById('weekTabs');
+  el.innerHTML = WEEKS.map((w, i) => `
+    <button class="week-tab ${i === currentWeek ? 'active' : ''}"
+            onclick="selectWeek(${i})">Minggu ${w.week}</button>
+  `).join('');
+}
+
+/* ============================================================
+   RENDER DAY TABS
+============================================================ */
+function renderDayTabs() {
+  const el = document.getElementById('dayTabs');
+  el.innerHTML = Array.from({length:7}, (_, i) => {
+    const done = isDayDone(currentWeek, i);
+    const today = isToday(currentWeek, i);
+    const dateLabel = getDateForDay(currentWeek, i);
+    return `<button class="day-tab ${i === currentDay ? 'active' : ''} ${done ? 'done-flag' : ''}"
+                    onclick="selectDay(${i})" title="${today ? '📌 Hari ini' : ''}">
+              Hari ${i+1}${today ? ' 📌' : ''}
+            </button>`;
+  }).join('');
+}
+
+/* ============================================================
+   RENDER MAIN (LATIHAN PAGE)
+============================================================ */
+function renderMain() {
+  const w = currentWeek, d = currentDay;
+  const wData = WEEKS[w];
+  const data  = getDayData(w, d);
+  const dayPct  = calcDayProgress(w, d);
+  const weekPct = calcWeekProgress(w);
+
+  let doneToday = 0, totalToday = 0;
+  wData.section1.forEach((e, i) => { totalToday += e.sets; doneToday += data.s1[i].filter(Boolean).length; });
+  wData.section2.forEach((e, i) => { totalToday += e.sets; doneToday += data.s2[i].filter(Boolean).length; });
+
+  let statusHtml = '';
+  if (dayPct === 100) {
+    statusHtml = `<div class="status-msg msg-complete anim">
+      <span class="status-emoji">🎉</span>Latihan hari ini selesai. Konsistensi lebih penting dari kesempurnaan.
+    </div>`;
+  } else if (doneToday > 0 || data.habits.some(Boolean)) {
+    statusHtml = `<div class="status-msg msg-incomplete anim">
+      <span class="status-emoji">⚠️</span>Program belum selesai hari ini. Jangan menipu diri sendiri.
+    </div>`;
+  }
+
+  const s1Html = wData.section1.map((ex, ei) => {
+    const allDone = data.s1[ei].every(Boolean);
+    const setsHtml = data.s1[ei].map((isDone, si) => `
+      <button class="set-btn ${isDone ? 'set-done' : ''}"
+              onclick="toggleSet(1, ${ei}, ${si})">S${si+1}</button>
+    `).join('');
+    return `<div class="exercise ${allDone ? 'ex-done' : ''}">
+      <div class="ex-name">${ex.name}</div>
+      <div class="ex-meta">${ex.sets} set × ${ex.detail}</div>
+      <div class="sets-row">${setsHtml}<span class="sets-hint">${data.s1[ei].filter(Boolean).length}/${ex.sets} set selesai</span></div>
+    </div>`;
+  }).join('');
+
+  const s2Html = wData.section2.map((ex, ei) => {
+    const allDone = data.s2[ei].every(Boolean);
+    const setsHtml = data.s2[ei].map((isDone, si) => `
+      <button class="set-btn ${isDone ? 'set-done' : ''}"
+              onclick="toggleSet(2, ${ei}, ${si})">S${si+1}</button>
+    `).join('');
+    return `<div class="exercise ${allDone ? 'ex-done' : ''}">
+      <div class="ex-name">${ex.name}</div>
+      <div class="ex-meta">${ex.sets} set × ${ex.detail}</div>
+      <div class="sets-row">${setsHtml}<span class="sets-hint">${data.s2[ei].filter(Boolean).length}/${ex.sets} set selesai</span></div>
+    </div>`;
+  }).join('');
+
+  const habitsHtml = HABITS.map((h, i) => `
+    <div class="habit-row" onclick="toggleHabit(${i})">
+      <div class="habit-box ${data.habits[i] ? 'habit-checked' : ''}"></div>
+      <span class="habit-text">${h}</span>
+    </div>
+  `).join('');
+
+  const ratingHtml = RATINGS.map((emoji, i) => {
+    const val = i + 1;
+    return `<button class="rating-btn ${data.rating === val ? 'selected' : ''}"
+                    onclick="setRating(${val})" title="${RATING_LABELS[i]}">${emoji}</button>`;
+  }).join('');
+
+  const dateInfo = getDateForDay(w, d);
+  const dateStr = dateInfo ? ` · ${dateInfo.toLocaleDateString('id-ID', {weekday:'short',day:'numeric',month:'short'})}` : '';
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="week-info anim">
+      <h2>${wData.title}</h2>
+      <p>${wData.focus}${dateStr}</p>
+    </div>
+    ${statusHtml}
+    <div class="stats-row anim">
+      <div class="stat-card">
+        <div class="stat-num">${doneToday}</div>
+        <div class="stat-lbl">Set selesai</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">${totalToday - doneToday}</div>
+        <div class="stat-lbl">Set tersisa</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">${data.habits.filter(Boolean).length}</div>
+        <div class="stat-lbl">Kebiasaan ✓</div>
+      </div>
+    </div>
+    <div class="progress-card anim">
+      <div class="prog-row">
+        <span class="prog-lbl">Progress Hari Ini</span>
+        <span class="prog-pct">${dayPct}%</span>
+      </div>
+      <div class="prog-bar-bg"><div class="prog-bar" style="width:${dayPct}%"></div></div>
+      <div class="prog-divider"></div>
+      <div class="prog-row">
+        <span class="prog-lbl">Progress Minggu ${w+1}</span>
+        <span class="prog-pct">${weekPct}%</span>
+      </div>
+      <div class="prog-bar-bg"><div class="prog-bar" style="width:${weekPct}%"></div></div>
+    </div>
+    <div class="action-row anim">
+      <button class="btn btn-sage"    onclick="markAllToday()">✓ Selesaikan</button>
+      <button class="btn btn-outline" onclick="resetToday()">↺ Reset Hari</button>
+      <button class="btn btn-danger"  onclick="resetAll()">✕ Reset Semua</button>
+    </div>
+    <div class="section-card anim">
+      <div class="section-head">
+        <div class="section-icon icon-green">🌿</div>
+        <div><div class="section-title">Reset Postur Harian</div><div class="section-sub">Lakukan setiap hari — 5–10 menit</div></div>
+      </div>
+      ${s1Html}
+    </div>
+    <div class="section-card anim">
+      <div class="section-head">
+        <div class="section-icon icon-blue">💪</div>
+        <div><div class="section-title">Latihan Utama</div><div class="section-sub">3–4× per minggu — sekitar 20–30 menit</div></div>
+      </div>
+      ${s2Html}
+    </div>
+    <div class="section-card anim">
+      <div class="section-head">
+        <div class="section-icon icon-purple">🎯</div>
+        <div><div class="section-title">Kebiasaan Postur Harian</div><div class="section-sub">Centang yang berhasil kamu lakukan hari ini</div></div>
+      </div>
+      <div class="habit-list">${habitsHtml}</div>
+    </div>
+    <div class="section-card anim">
+      <div class="section-head">
+        <div class="section-icon icon-orange">⚡</div>
+        <div><div class="section-title">Energi & Kondisi Tubuh</div><div class="section-sub">Bagaimana perasaanmu hari ini?</div></div>
+      </div>
+      <div class="rating-row">${ratingHtml}</div>
+      <div class="rating-label">${data.rating ? RATING_LABELS[data.rating-1] : 'Tap emoji untuk merating kondisi tubuhmu'}</div>
+    </div>
+    <div class="section-card anim">
+      <div class="section-head">
+        <div class="section-icon icon-yellow">📝</div>
+        <div><div class="section-title">Catatan Harian</div><div class="section-sub">Nyeri, ketegangan, atau progres hari ini</div></div>
+      </div>
+      <div class="notes-label">Catatan tubuh hari ini</div>
+      <textarea class="notes-area" id="notesArea"
+                placeholder="Contoh: bahu kanan terasa tegang, punggung bawah lebih lega..."
+                oninput="saveNotes(this.value)">${data.notes}</textarea>
+    </div>
+  `;
+}
+
+/* ============================================================
+   RENDER CALENDAR
+============================================================ */
+function renderCalendar() {
+  const start = getStartDate();
+  document.getElementById('startDateInput').value = start || '';
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = WEEKS.map((wData, wi) => {
+    const days = Array.from({length:7}, (_, di) => {
+      const pct = calcDayProgress(wi, di);
+      const done = pct === 100;
+      const partial = pct > 0 && pct < 100;
+      const dateObj = getDateForDay(wi, di);
+      const todayMark = isToday(wi, di);
+      const isCurrent = (wi === currentWeek && di === currentDay);
+      let cls = 'not-started';
+      if (done) cls = 'done';
+      else if (partial) cls = 'partial';
+      if (todayMark) cls += ' today-mark';
+      if (isCurrent) cls += ' current-sel';
+      const dateLabel = dateObj ? formatShortDate(dateObj) : '';
+      return `<div class="cal-day ${cls}" onclick="calSelectDay(${wi},${di})" title="Minggu ${wi+1} Hari ${di+1}${todayMark?' · Hari ini':''}">
+        <div class="cal-day-num">${di+1}</div>
+        ${dateLabel ? `<div class="cal-day-date">${dateLabel}</div>` : ''}
+        ${pct > 0 ? `<div class="cal-pct">${pct}%</div>` : ''}
+      </div>`;
+    }).join('');
+    return `<div class="cal-week-block">
+      <div class="cal-week-label">${wData.title}</div>
+      <div class="cal-days-row">${days}</div>
+    </div>`;
+  }).join('');
+}
+
+function calSelectDay(w, d) {
+  currentWeek = w;
+  currentDay  = d;
+  switchPage('Latihan');
+  renderAll();
+}
+
+function onStartDateChange(val) {
+  setStartDate(val);
+  renderCalendar();
+  renderDayTabs();
+  renderMain();
+  showToast('Tanggal mulai disimpan ✓');
+}
+
+/* ============================================================
+   RENDER SUMMARY
+============================================================ */
+function renderSummary() {
+  const overall = calcOverallProgress();
+  const streak  = calcStreak();
+  const best    = calcBestStreak();
+  const totalSets = calcTotalSetsDone();
+  const daysStarted = calcDaysStarted();
+
+  const weekBars = WEEKS.map((w, wi) => {
+    const pct = calcWeekProgress(wi);
+    // Average rating for the week
+    let ratingSum = 0, ratingCount = 0;
+    for (let d = 0; d < 7; d++) {
+      const r = getDayData(wi, d).rating;
+      if (r > 0) { ratingSum += r; ratingCount++; }
+    }
+    const avgRating = ratingCount ? (ratingSum/ratingCount).toFixed(1) : null;
+    const ratingEmoji = avgRating ? RATINGS[Math.round(avgRating)-1] : '';
+    return `<div class="week-prog-item">
+      <div class="week-prog-row">
+        <span class="week-prog-name">${w.title}</span>
+        <span>
+          <span class="week-prog-pct">${pct}%</span>
+          ${avgRating ? `<span class="week-rating-avg">${ratingEmoji} ${avgRating}</span>` : ''}
+        </span>
+      </div>
+      <div class="prog-bar-bg"><div class="prog-bar" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('sumWrap').innerHTML = `
+    <div class="sum-hero anim">
+      <div class="sum-big">${overall}%</div>
+      <div class="sum-big-lbl">Total Progress Program</div>
+    </div>
+    <div class="sum-stats-grid anim">
+      <div class="sum-stat-card">
+        <div class="sum-stat-num">🔥 ${streak}</div>
+        <div class="sum-stat-lbl">Streak Sekarang</div>
+      </div>
+      <div class="sum-stat-card">
+        <div class="sum-stat-num">⭐ ${best}</div>
+        <div class="sum-stat-lbl">Streak Terbaik</div>
+      </div>
+      <div class="sum-stat-card">
+        <div class="sum-stat-num">${totalSets}</div>
+        <div class="sum-stat-lbl">Total Set Selesai</div>
+      </div>
+      <div class="sum-stat-card">
+        <div class="sum-stat-num">${daysStarted}</div>
+        <div class="sum-stat-lbl">Hari Aktif</div>
+      </div>
+    </div>
+    <div class="section-card anim" style="margin-bottom:13px;">
+      <div class="section-head">
+        <div class="section-icon icon-green">📈</div>
+        <div><div class="section-title">Progress per Minggu</div><div class="section-sub">Rata-rata semua hari dalam setiap minggu</div></div>
+      </div>
+      <div class="week-progress-list">${weekBars}</div>
+    </div>
+    <div class="section-card anim" style="margin-bottom:13px;">
+      <div class="section-head">
+        <div class="section-icon icon-yellow">💡</div>
+        <div><div class="section-title">Tips Motivasi</div></div>
+      </div>
+      <p style="font-size:0.82rem;color:var(--text-mid);line-height:1.6;">${getMotivationTip(overall, streak)}</p>
+    </div>
+  `;
+}
+
+function getMotivationTip(overall, streak) {
+  if (overall === 0) return "Mulai perjalananmu hari ini. Satu langkah kecil lebih baik dari tidak sama sekali. 🌱";
+  if (overall < 20) return `Awal yang bagus! Konsistensi di awal program adalah kunci segalanya. Kamu sudah memulai — itu yang paling sulit. 💪`;
+  if (streak >= 7) return `🔥 ${streak} hari berturut-turut! Luar biasa. Kebiasaan terbentuk setelah 21 hari — kamu sedang di jalur yang benar.`;
+  if (streak === 0 && overall > 0) return "Setiap pelari terbaik pernah jatuh. Yang membedakan adalah bangkit dan lanjutkan. 🏃";
+  if (overall >= 80) return "Hampir selesai! Di sini banyak orang menyerah karena merasa sudah cukup baik. Tapi kamu tahu — postur ideal butuh komitmen penuh. 🎯";
+  return "Pertahankan ritme ini. Perubahan postur butuh waktu, tapi tubuhmu pasti merasakannya. Terus bergerak! 🧘";
+}
+
+/* ============================================================
+   USER INTERACTIONS
+============================================================ */
+function selectWeek(idx) { currentWeek = idx; currentDay = 0; renderAll(); }
+function selectDay(idx)  { currentDay = idx; renderAll(); }
+
+function renderAll() {
+  renderStreak();
+  renderWeekTabs();
+  renderDayTabs();
+  renderMain();
+}
+
+function toggleSet(section, exIdx, setIdx) {
+  const w = currentWeek, d = currentDay;
+  const data = getDayData(w, d);
+  if (section === 1) data.s1[exIdx][setIdx] = !data.s1[exIdx][setIdx];
+  else               data.s2[exIdx][setIdx] = !data.s2[exIdx][setIdx];
+  setDayData(w, d, data);
+  showToast('Tersimpan ✓');
+  renderAll();
+}
+
+function toggleHabit(idx) {
+  const w = currentWeek, d = currentDay;
+  const data = getDayData(w, d);
+  data.habits[idx] = !data.habits[idx];
+  setDayData(w, d, data);
+  showToast('Kebiasaan diperbarui ✓');
+  renderAll();
+}
+
+function setRating(val) {
+  const w = currentWeek, d = currentDay;
+  const data = getDayData(w, d);
+  data.rating = (data.rating === val) ? 0 : val; // toggle off
+  setDayData(w, d, data);
+  showToast('Rating disimpan ✓');
+  renderAll();
+}
+
+let noteTimer = null;
+function saveNotes(val) {
+  clearTimeout(noteTimer);
+  noteTimer = setTimeout(() => {
+    const w = currentWeek, d = currentDay;
+    const data = getDayData(w, d);
+    data.notes = val;
+    setDayData(w, d, data);
+    showToast('Catatan tersimpan ✓');
+  }, 700);
+}
+
+function markAllToday() {
+  const w = currentWeek, d = currentDay;
+  const wData = WEEKS[w];
+  const data  = getDayData(w, d);
+  data.s1     = wData.section1.map(e => Array(e.sets).fill(true));
+  data.s2     = wData.section2.map(e => Array(e.sets).fill(true));
+  data.habits = Array(HABITS.length).fill(true);
+  setDayData(w, d, data);
+  showToast('🎉 Semua latihan hari ini selesai!');
+  renderAll();
+}
+
+function resetToday() {
+  if (!confirm('Reset progress hari ini?')) return;
+  const w = currentWeek, d = currentDay;
+  const wData = WEEKS[w];
+  setDayData(w, d, {
+    s1: wData.section1.map(e => Array(e.sets).fill(false)),
+    s2: wData.section2.map(e => Array(e.sets).fill(false)),
+    habits: Array(HABITS.length).fill(false),
+    notes: getDayData(w, d).notes,
+    rating: 0,
+  });
+  showToast('Progress hari ini direset');
+  renderAll();
+}
+
+function resetAll() {
+  if (!confirm('Reset SELURUH program? Semua data akan dihapus!')) return;
+  if (!confirm('Yakin? Ini tidak bisa dibatalkan.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  currentWeek = 0; currentDay = 0;
+  showToast('Program direset dari awal');
+  renderAll();
+}
+
+/* ============================================================
+   TIMER
+============================================================ */
+let timerSeconds = 60;
+let timerRunning = false;
+let timerInterval = null;
+let selectedPreset = 60;
+
+function selectPreset(secs) {
+  selectedPreset = secs;
+  timerSeconds = secs;
+  if (!timerRunning) updateTimerDisplay();
+  ['30','45','60','90'].forEach(p => {
+    document.getElementById('pre'+p).classList.toggle('sel', parseInt(p) === secs);
+  });
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds / 60);
+  const s = timerSeconds % 60;
+  document.getElementById('timerDisplay').textContent =
+    m > 0 ? `${m}:${s.toString().padStart(2,'0')}` : `${timerSeconds}`;
+  document.getElementById('timerDisplay').classList.toggle('pulsing', timerRunning);
+}
+
+function startTimer() {
+  if (timerRunning) return;
+  if (timerSeconds <= 0) { timerSeconds = selectedPreset; }
+  timerRunning = true;
+  document.getElementById('timerFab').classList.add('running');
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    updateTimerDisplay();
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      document.getElementById('timerFab').classList.remove('running');
+      showToast('⏰ Istirahat selesai! Lanjutkan set berikutnya.');
+      // vibrate if supported
+      if (navigator.vibrate) navigator.vibrate([200,100,200]);
+      timerSeconds = selectedPreset;
+      updateTimerDisplay();
+    }
+  }, 1000);
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  document.getElementById('timerFab').classList.remove('running');
+  timerSeconds = selectedPreset;
+  updateTimerDisplay();
+}
+
+function openTimer() {
+  document.getElementById('timerOverlay').classList.add('open');
+  updateTimerDisplay();
+}
+
+function closeTimer() {
+  document.getElementById('timerOverlay').classList.remove('open');
+}
+
+/* ============================================================
+   TOAST
+============================================================ */
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+function init() {
+  // Auto-detect today's week/day if start date is set
+  const start = getStartDate();
+  if (start) {
+    const startMs = new Date(start).getTime();
+    const nowMs   = new Date().setHours(0,0,0,0);
+    const diff    = Math.floor((nowMs - startMs) / 86400000);
+    if (diff >= 0 && diff < 56) {
+      currentWeek = Math.floor(diff / 7);
+      currentDay  = diff % 7;
+    }
+  }
+  renderAll();
+}
+
+init();
+</script>
+</body>
+</html>
